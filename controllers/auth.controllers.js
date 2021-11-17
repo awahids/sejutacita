@@ -11,12 +11,18 @@ module.exports = {
       const { name, username, password, role } = req.body;
 
       const schema = Joi.object({
-        name: Joi.string().alphanum().required(),
-        username: Joi.string().alphanum().min(6).max(8).required(),
+        name: Joi.string().required(),
+        username: Joi.string().min(6).max(8).required(),
         password: Joi.string().min(8).required(),
+        role: Joi.string()
       });
 
-      const { error } = schema.validate({ ...body }, { abortEarly: false });
+      const { error } = schema.validate({
+        name: name,
+        username: username,
+        password: password,
+        role: role
+      }, { abortEarly: false });
 
       if (error) {
         return res.status(400).json({
@@ -35,13 +41,13 @@ module.exports = {
         });
       }
 
-      const hashPass = await authHash(password);
+      const hashPassword = await authHash(password);
 
       const signUp = await Users.create({
         name,
         username,
-        password: hashPass,
-        role,
+        password: hashPassword,
+        role
       });
 
       if (!signUp) {
@@ -54,6 +60,7 @@ module.exports = {
       return res.status(200).json({
         status: "Success",
         message: "Success signup",
+        data: signUp
       });
     } catch (error) {
       return res.status(500).json({
@@ -63,35 +70,47 @@ module.exports = {
     }
   },
 
-  signIn = async(req, res) => {
+  signIn: async(req, res) => {
     const {username, password} = req.body;
     const body = req.body
 
     try {
-        const schema = Joi.object({
-            username: Joi.string().required(),
-            password: Joi.string().required()
-        })
-
-        const {error} = schema.validate({...body})
-
-        if(error){
-            return res.status(400).json({
-                status: "Failed",
-                message: "Invalid email or password",
-                error: error["details"][0]["message"]
-            });
-        }
-
         const checkUsername = await Users.findOne({username: username})
 
         if (!checkUsername) {
-            return res.status(400).json({});
+            return res.status(400).json({
+              status: "Failed",
+              message: "Invalid username"
+            });
         }
 
+      const checkPassword = await Bcrypt.compare(body.password, checkUsername.password)
+      
+      if (!checkPassword) {
+        return res.status(400).json({
+          status: "failed",
+          message: "Invalid password"
+        });
+      }
+
+      const payload = {
+          username: checkUsername.username,
+          id: checkUsername._id,
+      };
+
+      Jwt.sign(payload, process.env.PWD_TOKEN, { expiresIn: 3600 * 24 }, (err, token) => {
+        return res.status(200).json({
+          status: "Success",
+          message: "Sign In successfully",
+          data: token
+        });
+      })
 
     } catch (error) {
-        
+      return res.status(500).json({
+        status: "Failed",
+        message: "Internal Server Error"
+      })
     }
   }
 };
