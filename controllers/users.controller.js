@@ -42,8 +42,8 @@ module.exports = {
       userUpdate.password = body.password ? body.password : userUpdate.password;
 
       await userUpdate.save();
-      return res.status(400).json({
-        status: "Failed",
+      return res.status(200).json({
+        status: "Success",
         message: "Success update profile",
         data: userUpdate,
       });
@@ -57,7 +57,6 @@ module.exports = {
 
   deleteUser: async (req, res) => {
     const id = req.params.id;
-    const user = req.user;
 
     try {
       const deleteUser = await Users.findById(id);
@@ -68,7 +67,7 @@ module.exports = {
         });
       }
 
-      await deleteUser.findByIdAndRemove(id);
+      await Users.findByIdAndRemove(id);
       res.status(200).json({
         status: "success",
         message: "user success delete",
@@ -86,6 +85,13 @@ module.exports = {
 
     try {
       const findUser = await Users.findById(id);
+
+      if (!findUser) {
+        return res.status(400).json({
+          status: "Failed",
+          message: "Cannot found user"
+        });
+      }
 
       return res.status(200).json({
         status: "success",

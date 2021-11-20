@@ -63,6 +63,10 @@ module.exports = {
         data: signUp,
       });
     } catch (error) {
+      console.log(
+        "🚀 ~ file: auth.controller.js ~ line 66 ~ signUp: ~ error",
+        error
+      );
       return res.status(500).json({
         status: "Failed",
         message: "Internal Server Error",
