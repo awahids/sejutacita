@@ -8,6 +8,7 @@ router.get("/me", authToken, user.currentUser);
 router.get("/listusers", authToken, authAdmin, user.showUsersList);
 router.get("/:id", authToken, authAdmin, user.showUserById);
 router.put("/", authToken, user.updateUsers);
-router.delete("/:id", authToken, user.deleteUser);
+router.put("/edit/:id", authAdmin, user.updateUserById);
+router.delete("/:id", authAdmin, user.deleteUser);
 
 module.exports = router;

@@ -18,10 +18,6 @@ module.exports = {
         data: findUsers,
       });
     } catch (error) {
-      console.log(
-        "🚀 ~ file: users.controller.js ~ line 21 ~ showUsersList: ~ error",
-        error
-      );
       return res.status(500).json({
         status: "Failed",
         message: "Internal Server Error",
@@ -43,7 +39,35 @@ module.exports = {
       }
 
       userUpdate.name = body.name ? body.name : userUpdate.name;
-      userUpdate.password = body.password ? body.password : userUpdate.password;
+
+      await userUpdate.save();
+      return res.status(200).json({
+        status: "Success",
+        message: "Success update profile",
+        data: userUpdate,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "Failed",
+        message: "Internal Server Error",
+      });
+    }
+  },
+
+  updateUserById: async (req, res) => {
+    const id = req.params.id;
+    const body = req.body;
+    try {
+      const userUpdate = await Users.findById(id);
+
+      if (!userUpdate) {
+        return res.status(400).json({
+          status: "Failed",
+          message: "You cannot edit other users",
+        });
+      }
+
+      userUpdate.name = body.name ? body.name : userUpdate.name;
 
       await userUpdate.save();
       return res.status(200).json({
@@ -60,19 +84,19 @@ module.exports = {
   },
 
   deleteUser: async (req, res) => {
-    const id = req.params.id;
-
     try {
+      const id = req.params.id;
       const deleteUser = await Users.findById(id);
 
       if (!deleteUser) {
         return res.status(404).json({
+          status: "Failed",
           message: "User not Found",
         });
       }
 
-      await Users.findByIdAndRemove(id);
-      res.status(200).json({
+      await Users.findByIdAndDelete(id);
+      return res.status(200).json({
         status: "success",
         message: "user success delete",
       });

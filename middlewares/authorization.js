@@ -33,7 +33,10 @@ module.exports = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log("🚀 ~ file: authorization.js ~ line 36 ~ module.exports= ~ error", error)
+    console.log(
+      "🚀 ~ file: authorization.js ~ line 36 ~ module.exports= ~ error",
+      error
+    );
     return res.status(500).json({
       status: "failed",
       message: "Invalid Token !",
