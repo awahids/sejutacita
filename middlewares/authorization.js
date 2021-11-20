@@ -1,30 +1,42 @@
-module.exports = {
-  authAdmin: async (req, res, next) => {
-    try {
-      if (req.users.role != "admin") {
-        throw new Error("Only Admin can do the request");
-      }
-      next();
-    } catch (error) {
-      return res.status(401).json({
+const jwt = require("jsonwebtoken");
+const Users = require("../models/users.model");
+
+module.exports = async (req, res, next) => {
+  const bearerToken = req.header("Authorization");
+  const token = bearerToken.replace("Bearer ", "");
+  const decode = jwt.verify(token, process.env.PWD_TOKEN);
+  req.user = decode;
+  const user = req.user;
+
+  try {
+    if (!user) {
+      return res.status(400).json({
         status: "failed",
-        message: "Bad Request",
+        message: "Authorization denied! please login",
       });
     }
-  },
 
-  authUser: async (req, res, next) => {
-    try {
-      if (req.users.id != req.params.id) {
-        throw new Error("Cannot do it to another User");
-      }
-
-      next();
-    } catch (error) {
-      return res.status(401).json({
+    const userAdmin = await Users.findById({ _id: user.id });
+    if (!userAdmin) {
+      return res.status(400).json({
         status: "failed",
-        message: "Bad Request",
+        message: "No Admin found in database",
       });
     }
-  },
+
+    if (userAdmin.role != "admin") {
+      return res.status(401).json({
+        status: "failed",
+        message: "You are not Admin",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.log("🚀 ~ file: authorization.js ~ line 36 ~ module.exports= ~ error", error)
+    return res.status(500).json({
+      status: "failed",
+      message: "Invalid Token !",
+    });
+  }
 };

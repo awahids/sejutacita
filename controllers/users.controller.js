@@ -18,6 +18,10 @@ module.exports = {
         data: findUsers,
       });
     } catch (error) {
+      console.log(
+        "🚀 ~ file: users.controller.js ~ line 21 ~ showUsersList: ~ error",
+        error
+      );
       return res.status(500).json({
         status: "Failed",
         message: "Internal Server Error",
@@ -89,7 +93,7 @@ module.exports = {
       if (!findUser) {
         return res.status(400).json({
           status: "Failed",
-          message: "Cannot found user"
+          message: "Cannot found user",
         });
       }
 

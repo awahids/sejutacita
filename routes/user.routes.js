@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const user = require("../controllers/users.controller");
 const { authToken } = require("../middlewares/auth");
-const { authAdmin } = require("../middlewares/authorization");
+const authAdmin = require("../middlewares/authorization");
 
 router.get("/me", authToken, user.currentUser);
 router.get("/listusers", authToken, authAdmin, user.showUsersList);
